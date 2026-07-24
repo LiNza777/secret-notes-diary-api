@@ -1,6 +1,27 @@
 # Secret Notes API
 
-API для безопасного личного дневника с JWT-авторизацией.
+REST API для хранения личных заметок с JWT-аутентификацией.
+Каждый пользователь имеет собственное пространство заметок.
+Поддерживаются регистрация, авторизация, CRUD операций над заметками, миграции базы данных и контейнеризация через Docker.
+
+
+
+## Возможности
+
+- регистрация пользователей
+- JWT-аутентификация через HttpOnly Cookie
+- CRUD заметок
+- защита данных пользователя
+- миграции Alembic
+- Docker
+
+## Особенности реализации
+
+- JWT хранится в HttpOnly Cookie
+- Пароли хэшируются bcrypt
+- SQLAlchemy ORM
+- Alembic для миграций
+- Каждый пользователь имеет доступ только к собственным заметкам
 
 ## Технологии
 - FastAPI
@@ -8,6 +29,21 @@ API для безопасного личного дневника с JWT-авт�
 - SQLAlchemy + Alembic
 - Docker + docker-compose
 - JWT (python-jose)
+
+## Архитектура
+
+├── auth.py
+├── config.py
+├── data_base.py
+├── main.py
+├── models.py
+├── routers_auth.py
+├── routers_notes.py
+├── schemas.py
+├── services.py
+├── alembic/
+├── Dockerfile
+└── docker-compose.yml
 
 ## Запуск
 
