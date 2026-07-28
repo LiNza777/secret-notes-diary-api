@@ -24,6 +24,20 @@ def create_note(
 ):
     return services.create_note(db, note_data, owner_id=current_user.id)
 
+@notes_router.get("/{note_id}", response_model=NoteResponse)
+def get_note(
+    note_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    db_note = services.get_note_by_id(db, note_id, owner_id=current_user.id)
+    if not db_note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Заметка не найдена"
+        )
+    return db_note
+
 @notes_router.patch("/{note_id}", response_model=NoteResponse)
 def update_note(
     note_id: int, 
@@ -31,7 +45,7 @@ def update_note(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    # 1. Ищем заметку и сразу проверяем права доступа
+    """ Ищем заметку и сразу проверяем права доступа"""
     db_note = services.get_note_by_id(db, note_id, owner_id=current_user.id)
     if not db_note:
         raise HTTPException(
@@ -39,7 +53,7 @@ def update_note(
             detail="Заметка не найдена"
         )
     
-    # 2. Обновляем через сервис
+    """ Обновляем через сервис"""
     return services.update_note(db, db_note, note_data)
 
 @notes_router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -57,16 +71,3 @@ def delete_note(
     
     services.delete_note(db, db_note)
     return None
-@notes_router.get("/{note_id}", response_model=NoteResponse)
-def get_note(
-    note_id: int, 
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
-):
-    db_note = services.get_note_by_id(db, note_id, owner_id=current_user.id)
-    if not db_note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Заметка не найдена"
-        )
-    return db_note

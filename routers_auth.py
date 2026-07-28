@@ -27,7 +27,7 @@ def login(form_data: UserLoginSchema, response: Response, db: Session = Depends(
             detail="Неверное имя пользователя или пароль"
         )
     
-    # Генерируем токен и кладем в HttpOnly cookie
+    """Генерируем токен и кладем в HttpOnly cookie """
     access_token = create_access_token(data={"sub": user.username})
     response.set_cookie(
         key="access_token", 
@@ -39,7 +39,7 @@ def login(form_data: UserLoginSchema, response: Response, db: Session = Depends(
 
 @auth_router.post("/logout")
 def logout(response: Response):
-    # Очищаем куку при выходе
+    """Очищаем куку при выходе"""
     response.delete_cookie("access_token")
     return {"message": "Вы вышли из системы"}
 

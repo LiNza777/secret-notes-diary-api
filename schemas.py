@@ -22,4 +22,4 @@ class NoteResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     owner_id: int
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True}        
