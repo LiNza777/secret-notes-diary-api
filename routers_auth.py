@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from data_base import get_db
 from schemas import UserRegisterSchema, UserLoginSchema
@@ -8,14 +8,18 @@ import services
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
+def send_welcome_email(username: str):
+    print(f"[Background] Письмо отправлено пользователю: {username}")
+
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-def register(form_data: UserRegisterSchema, db: Session = Depends(get_db)):
+def register(form_data: UserRegisterSchema,background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     if services.get_user_by_username(db, form_data.username):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Имя пользователя уже занято"
         )
     services.create_user(db, form_data)
+    background_tasks.add_task(send_welcome_email, form_data.username)
     return {"message": "Пользователь успешно зарегистрирован"}
 
 @auth_router.post("/login")
