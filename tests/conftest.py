@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+import fakeredis
+import redis_client
 
 from main import app
 from data_base import Base, get_db
@@ -16,6 +18,12 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+@pytest.fixture(autouse=True)
+def mock_redis():
+    fake_redis_instance = fakeredis.FakeRedis(decode_responses=True)
+    redis_client.redis_client = fake_redis_instance
+    yield fake_redis_instance
+    fake_redis_instance.flushall()
 
 @pytest.fixture(scope="function")
 def db_session():
