@@ -1,7 +1,3 @@
-from urllib.request import Request
-
-from jose import jwt
-
 from fastapi import APIRouter, Depends, HTTPException, Response, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from data_base import get_db
