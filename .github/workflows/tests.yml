@@ -1,35 +1,36 @@
-name: Autotests # Название нашего процесса
+name: Autotests
 
-# 1. КОГДА ЗАПУСКАТЬ?
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
-# 2. ЧТО ДЕЛАТЬ?
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    steps: 
-      
+    env:
+      SECRET_KEY: "supersecret_test_key_for_ci"
+      DATABASE_URL: "sqlite:///./test.db"
+
+    steps:
       - name: Клонируем код репозитория
         uses: actions/checkout@v4
       
       - name: Устанавливаем Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.9'
       
-      - name:  Устанавливаем зависимости
+      - name: Устанавливаем зависимости
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest httpx
       
-      - name:  Запускаем тесты
+      - name: Запускаем тесты
         run: |
           pytest -v
