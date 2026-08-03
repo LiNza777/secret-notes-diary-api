@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
+from sqlalchemy import select
 from jose import JWTError, jwt
 from fastapi import Request, Depends, HTTPException
 from passlib.context import CryptContext
 from data_base import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import User
 from config import settings
 
@@ -24,7 +25,7 @@ def verify_password(plain_password, hashed_password):
     """Проверяет совпадает ли введенный пароль с хэшем из БД"""
     return pwd_context.verify(plain_password, hashed_password)
 
-def get_current_user(request: Request, db: Session = Depends(get_db)):
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):
     """Проверяет прилетевший токен из куки"""
     token = request.cookies.get("access_token")
     if not token:
@@ -43,7 +44,8 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Токен недействителен или просрочен")
     
     """Находим пользователя в базе (чтобы убедиться, что его не удалили)"""
-    user = db.query(User).filter(User.username == username).first()
+    user = await db.execute(select(User).where(User.username == username))
+    user = user.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="Пользователь больше не существует")
         

@@ -22,7 +22,7 @@ services:
       - .:/app
     environment:
       PYTHONUNBUFFERED: "1"
-      DATABASE_URL: postgresql://diary_user:diary_pass@db:5432/diary_db
+      DATABASE_URL: postgresql+asyncpg://diary_user:diary_pass@db:5432/diary_db
 
 volumes:
   postgres_data:
