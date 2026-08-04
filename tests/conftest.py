@@ -8,8 +8,11 @@ import fakeredis.aioredis
 from main import app
 from data_base import get_db
 from base import Base
+from limiter import limiter
 
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+limiter.enabled = False
 
 @pytest.fixture(autouse=True)
 async def mock_redis(monkeypatch):
