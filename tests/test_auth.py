@@ -1,6 +1,9 @@
-def test_register_user_success(client):
+import pytest
+from httpx import AsyncClient
+
+async def test_register_user_success_async(client):
     """Тест 1: Успешная регистрация нового пользователя."""
-    response = client.post(
+    response = await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "password123"}
     )
@@ -8,14 +11,14 @@ def test_register_user_success(client):
     assert response.json() == {"message": "Пользователь успешно зарегистрирован"}
 
 
-def test_register_duplicate_username(client):
+async def test_register_duplicate_username_async(client):
     """Тест 2: Регистрация с уже занятым username должна возвращать 400."""
-    client.post(
+    await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "password123"}
     )
 
-    response = client.post(
+    response = await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "anotherpassword"}
     )
@@ -23,14 +26,14 @@ def test_register_duplicate_username(client):
     assert response.json()["detail"] == "Имя пользователя уже занято"
 
 
-def test_login_success(client):
+async def test_login_success_async(client):
     """Тест 3: Успешный вход должен возвращать 200 и устанавливать cookie access_token."""
-    client.post(
+    await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "password123"}
     )
 
-    response = client.post(
+    response = await client.post(
         "/auth/login",
         json={"username": "testuser", "password": "password123"}
     )
@@ -40,14 +43,14 @@ def test_login_success(client):
     assert "access_token" in response.cookies
 
 
-def test_login_wrong_password(client):
+async def test_login_wrong_password_async(client):
     """Тест 4: Неверный пароль должен возвращать 401."""
-    client.post(
+    await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "password123"}
     )
 
-    response = client.post(
+    response = await client.post(
         "/auth/login",
         json={"username": "testuser", "password": "wrongpassword"}
     )
@@ -55,41 +58,41 @@ def test_login_wrong_password(client):
     assert response.json()["detail"] == "Неверное имя пользователя или пароль"
 
 
-def test_get_me_unauthorized(client):
+async def test_get_me_unauthorized_async(client):
     """Тест 5: Запрос защищенного эндпоинта без авторизации должен возвращать 401."""
-    response = client.get("/auth/me")
+    response = await client.get("/auth/me")
     assert response.status_code == 401
 
 
-def test_get_me_success(client):
+async def test_get_me_success_async(client):
     """Тест 6: Успешный доступ к защищенному эндпоинту с авторизованным клиентом."""
-    client.post(
+    await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "password123"}
     )
-    client.post(
+    await client.post(
         "/auth/login",
         json={"username": "testuser", "password": "password123"}
     )
 
-    response = client.get("/auth/me")
+    response = await client.get("/auth/me")
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
 
 
-def test_logout(client):
+async def test_logout_async(client):
     """Тест 7: Логаут должен удалять куку авторизации."""
-    client.post(
+    await client.post(
         "/auth/register",
         json={"username": "testuser", "password": "password123"}
     )
-    client.post(
+    await client.post(
         "/auth/login",
         json={"username": "testuser", "password": "password123"}
     )
 
-    logout_response = client.post("/auth/logout")
+    logout_response = await client.post("/auth/logout")
     assert logout_response.status_code == 200
   
-    me_response = client.get("/auth/me")
+    me_response = await client.get("/auth/me")
     assert me_response.status_code == 401

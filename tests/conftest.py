@@ -1,41 +1,46 @@
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import pytest_asyncio
+from typing import AsyncGenerator  
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
+from httpx import AsyncClient, ASGITransport    
 
 from main import app
-from data_base import Base, get_db
+from data_base import get_db
+from base import Base
 
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
+SQLALCHEMY_TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-engine = create_engine(
+engine_test = create_async_engine(
     SQLALCHEMY_TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+    poolclass=StaticPool,  # Держит базу в памяти единой на протяжении всего теста
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+async_session_maker = async_sessionmaker(
+    bind=engine_test,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False
+)
 
 
-@pytest.fixture(scope="function")
-def db_session():
+@pytest_asyncio.fixture(scope="function")
+async def db_session():
     """Создает свежие таблицы перед тестом и чистит их после."""
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=engine)
+    async with engine_test.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with async_session_maker() as session:
+        yield session
+    async with engine_test.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
-@pytest.fixture(scope="function")
-def client(db_session):
+@pytest_asyncio.fixture(scope="function")
+async def client(db_session):
     """
     Подменяет реальную БД на тестовую сессию (dependency_overrides)
     и возвращает экземпляр TestClient.
     """
-    def override_get_db():
+    async def override_get_db():
         try:
             yield db_session
         finally:
@@ -44,7 +49,10 @@ def client(db_session):
     """ Переопределяем зависимость get_db в FastAPI """
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestClient(app) as test_client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), 
+        base_url="http://test"
+    ) as test_client:
         yield test_client
 
     """ Сбрасываем переопределения после выполнения теста""" 

@@ -1,36 +1,33 @@
-name: Autotests
+name: Async API CI
 
 on:
   push:
-    branches:
-      - master
+    branches: [ "feature/async-refactoring", ]
   pull_request:
-    branches:
-      - master
+    branches: [ "feature/async-refactoring", ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      SECRET_KEY: "supersecret_test_key_for_ci"
-      DATABASE_URL: "sqlite:///./test.db"
-
     steps:
-      - name: Клонируем код репозитория
+      - name: Чеккаут кода
         uses: actions/checkout@v4
-      
-      - name: Устанавливаем Python
+
+      - name: Установка Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      
-      - name: Устанавливаем зависимости
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Установка зависимостей
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest httpx
-      
-      - name: Запускаем тесты
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Запуск тестов через Pytest
+        env:
+          SECRET_KEY: "test_secret_key_for_ci_environment"
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
         run: |
           pytest -v
