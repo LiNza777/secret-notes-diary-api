@@ -3,16 +3,27 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 from httpx import AsyncClient, ASGITransport    
-
+import pytest
+import fakeredis.aioredis
 from main import app
 from data_base import get_db
 from base import Base
 
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
+
+
+@pytest.fixture(autouse=True)
+async def mock_redis(monkeypatch):
+    """Автоматически подменяет redis_client на in-memory хранилище для всех тестов."""
+    fake_redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
+    monkeypatch.setattr("redis_client.redis_client", fake_redis)
+    yield fake_redis
+    await fake_redis.aclose()
+
 engine_test = create_async_engine(
     SQLALCHEMY_TEST_DATABASE_URL,
-    poolclass=StaticPool,  # Держит базу в памяти единой на протяжении всего теста
+    poolclass=StaticPool, 
 )
 
 async_session_maker = async_sessionmaker(
