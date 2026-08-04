@@ -6,6 +6,7 @@ from auth import create_access_token, create_refresh_token, get_current_user, de
 from models import User
 import services
 import redis_client
+from limiter import limiter
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -13,7 +14,9 @@ def send_welcome_email(username: str):
     print(f"[Background] Письмо отправлено пользователю: {username}")
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def register(
+    request: Request,
     form_data: UserRegisterSchema, 
     background_tasks: BackgroundTasks, 
     db: AsyncSession = Depends(get_db)
@@ -28,7 +31,9 @@ async def register(
     return {"message": "Пользователь успешно зарегистрирован"}
 
 @auth_router.post("/login")
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     form_data: UserLoginSchema, 
     response: Response, 
     db: AsyncSession = Depends(get_db)
