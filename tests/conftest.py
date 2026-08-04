@@ -11,8 +11,6 @@ from base import Base
 
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-
-
 @pytest.fixture(autouse=True)
 async def mock_redis(monkeypatch):
     """Автоматически подменяет redis_client на in-memory хранилище для всех тестов."""
