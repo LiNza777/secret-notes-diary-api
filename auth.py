@@ -10,6 +10,19 @@ from config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def decode_token(token: str) -> dict:
+    """Декодирует JWT-токен. 
+
+    Выбрасывает HTTPException 401, если токен просрочен или сломан.
+    """
+    try:
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        raise HTTPException(
+            status_code=401, 
+            detail="Токен недействителен или просрочен"
+        )
+    
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
