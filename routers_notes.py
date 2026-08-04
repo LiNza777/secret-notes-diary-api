@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from data_base import get_db
 from schemas import NoteCreateSchema, NoteUpdateSchema, NoteResponse
 from auth import get_current_user
