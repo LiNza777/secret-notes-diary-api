@@ -22,10 +22,18 @@ def decode_token(token: str) -> dict:
             status_code=401, 
             detail="Токен недействителен или просрочен"
         )
-    
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+def create_refresh_token(data: dict):
+    """Генерирует долгоживущий Refresh-токен на 7 дней."""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=7)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
@@ -43,19 +51,16 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Вы не вошли в систему")
+    
     token = token.replace("Bearer ", "")
     
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        """Проверка на то, что передается корректный токен с полем sub (username)"""
-        username: str = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=401, detail="Токен сломан")
-            
-    except JWTError:
-        """ Если время вышло (exp) или подпись не сошлась """
-        raise HTTPException(status_code=401, detail="Токен недействителен или просрочен")
+    # Используем созданную функцию decode_token
+    payload = decode_token(token)
+    username: str = payload.get("sub")
     
+    if username is None:
+        raise HTTPException(status_code=401, detail="Токен сломан")
+        
     """Находим пользователя в базе (чтобы убедиться, что его не удалили)"""
     user = await db.execute(select(User).where(User.username == username))
     user = user.scalar_one_or_none()
