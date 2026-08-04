@@ -19,11 +19,13 @@ if config.config_file_name:
 target_metadata = Base.metadata
 
 # 3. Достаем DATABASE_URL из окружения Docker
-db_url = os.getenv("DATABASE_URL", str(settings.DATABASE_URL))
+db_url = os.getenv("DATABASE_PUBLIC_URL") or os.getenv("DATABASE_URL", str(settings.DATABASE_URL))
 
 # Если используется asyncpg, меняем на синхронный драйвер для Alembic
-if db_url.startswith("postgresql+asyncpg://"):
-    db_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+if "asyncpg" in db_url:
+    db_url = db_url.replace("+asyncpg", "")
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 # Записываем итоговый URL в конфиг
 config.set_main_option("sqlalchemy.url", db_url)
