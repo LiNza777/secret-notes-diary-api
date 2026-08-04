@@ -3,16 +3,8 @@
 line-length = 88
 target-version = "py310"
 
-# Добавляем исключения:
-# B008 — разрешает Depends() в аргументах FastAPI
-# E501 — опускаем строгость по длине строк (или позволяем Ruff сам форматировать то, что можно)
-ignore = ["B008", "E501"]
-
 # Игнорировать автосгенерированные файлы Alembic
 extend-exclude = ["alembic/versions"]
-
-[tool.ruff.lint.per-file-ignores]
-"auth.py" = ["B904"]
 
 [tool.ruff.lint]
 # Выбираем правила:
@@ -22,7 +14,13 @@ extend-exclude = ["alembic/versions"]
 # B — проверка на частые баги (flake8-bugbear)
 # UP — предложения по обновлению синтаксиса на современный Python (pyupgrade)
 select = ["E", "W", "F", "I", "B", "UP"]
-ignore = []
+
+# B008 — разрешает Depends() в аргументах FastAPI
+# E501 — опускаем строгость по длине строк для докстрингов и комментов
+ignore = ["B008", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"auth.py" = ["B904"]
 
 [tool.ruff.format]
 quote-style = "double"
