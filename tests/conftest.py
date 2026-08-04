@@ -1,18 +1,19 @@
-import pytest_asyncio
-from typing import AsyncGenerator  
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.pool import StaticPool
-from httpx import AsyncClient, ASGITransport    
-import pytest
 import fakeredis.aioredis
-from main import app
-from data_base import get_db
+import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
+
 from base import Base
+from data_base import get_db
 from limiter import limiter
+from main import app
 
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 limiter.enabled = False
+
 
 @pytest.fixture(autouse=True)
 async def mock_redis(monkeypatch):
@@ -22,16 +23,14 @@ async def mock_redis(monkeypatch):
     yield fake_redis
     await fake_redis.aclose()
 
+
 engine_test = create_async_engine(
     SQLALCHEMY_TEST_DATABASE_URL,
-    poolclass=StaticPool, 
+    poolclass=StaticPool,
 )
 
 async_session_maker = async_sessionmaker(
-    bind=engine_test,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autoflush=False
+    bind=engine_test, class_=AsyncSession, expire_on_commit=False, autoflush=False
 )
 
 
@@ -52,6 +51,7 @@ async def client(db_session):
     Подменяет реальную БД на тестовую сессию (dependency_overrides)
     и возвращает экземпляр TestClient.
     """
+
     async def override_get_db():
         try:
             yield db_session
@@ -62,10 +62,9 @@ async def client(db_session):
     app.dependency_overrides[get_db] = override_get_db
 
     async with AsyncClient(
-        transport=ASGITransport(app=app), 
-        base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as test_client:
         yield test_client
 
-    """ Сбрасываем переопределения после выполнения теста""" 
+    """ Сбрасываем переопределения после выполнения теста"""
     app.dependency_overrides.clear()

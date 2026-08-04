@@ -1,17 +1,20 @@
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import select
+
+from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
-from fastapi import Request, Depends, HTTPException
 from passlib.context import CryptContext
-from data_base import get_db
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import User
+
 from config import settings
+from data_base import get_db
+from models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def decode_token(token: str) -> dict:
-    """Декодирует JWT-токен. 
+    """Декодирует JWT-токен.
 
     Выбрасывает HTTPException 401, если токен просрочен или сломан.
     """
@@ -19,52 +22,62 @@ def decode_token(token: str) -> dict:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     except JWTError:
         raise HTTPException(
-            status_code=401, 
-            detail="Токен недействителен или просрочен"
+            status_code=401, detail="Токен недействителен или просрочен"
         )
+
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
     return encoded_jwt
+
 
 def create_refresh_token(data: dict):
     """Генерирует долгоживущий Refresh-токен на 7 дней."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=7)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
     return encoded_jwt
+
 
 def get_password_hash(password):
     """Хэширует пароль с помощью bcrypt"""
     return pwd_context.hash(password)
 
+
 def verify_password(plain_password, hashed_password):
     """Проверяет совпадает ли введенный пароль с хэшем из БД"""
     return pwd_context.verify(plain_password, hashed_password)
+
 
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):
     """Проверяет прилетевший токен из куки"""
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Вы не вошли в систему")
-    
+
     token = token.replace("Bearer ", "")
-    
+
     # Используем созданную функцию decode_token
     payload = decode_token(token)
     username: str = payload.get("sub")
-    
+
     if username is None:
         raise HTTPException(status_code=401, detail="Токен сломан")
-        
+
     """Находим пользователя в базе (чтобы убедиться, что его не удалили)"""
     user = await db.execute(select(User).where(User.username == username))
     user = user.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="Пользователь больше не существует")
-        
+
     return user

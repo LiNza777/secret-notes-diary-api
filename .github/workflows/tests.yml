@@ -2,9 +2,9 @@ name: Async API CI
 
 on:
   push:
-    branches: [ "feature/async-refactoring", ]
+    branches: [ "feature/async-refactoring" ]
   pull_request:
-    branches: [ "feature/async-refactoring", ]
+    branches: [ "feature/async-refactoring" ]
 
 jobs:
   test:
@@ -24,6 +24,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      
+      - name: Проверка линтером Ruff
+        run: ruff check .
+
+      - name: Проверка форматирования Ruff
+        run: ruff format --check .
+      
 
       - name: Запуск тестов через Pytest
         env:

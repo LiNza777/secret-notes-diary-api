@@ -2,6 +2,7 @@ import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
+
 from alembic import context
 
 # Импорты твоего проекта
@@ -19,7 +20,9 @@ if config.config_file_name:
 target_metadata = Base.metadata
 
 # 3. Достаем DATABASE_URL из окружения Docker
-db_url = os.getenv("DATABASE_PUBLIC_URL") or os.getenv("DATABASE_URL", str(settings.DATABASE_URL))
+db_url = os.getenv("DATABASE_PUBLIC_URL") or os.getenv(
+    "DATABASE_URL", str(settings.DATABASE_URL)
+)
 
 # Если используется asyncpg, меняем на синхронный драйвер для Alembic
 if "asyncpg" in db_url:
@@ -54,10 +57,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, 
-            target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
