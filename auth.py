@@ -67,7 +67,7 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
 
     token = token.replace("Bearer ", "")
 
-    # Используем созданную функцию decode_token
+    """Используем decode_token"""
     payload = decode_token(token)
     username: str = payload.get("sub")
 

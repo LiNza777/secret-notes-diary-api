@@ -13,7 +13,7 @@ class User(Base):
     hashed_password: Mapped[str]
     notes: Mapped[list["Note"]] = relationship(
         back_populates="owner", cascade="all, delete-orphan"
-    )  # Связь с заметками
+    )
 
 
 class Note(Base):
@@ -25,5 +25,5 @@ class Note(Base):
     updated_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, onupdate=datetime.utcnow
     )
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))  # Связь с создателем
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     owner: Mapped["User"] = relationship(back_populates="notes")

@@ -4,12 +4,9 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
-# Импорты твоего проекта
 from config import settings
-from models import Base  # Твоя база с моделями
+from models import Base
 
-# Объект конфигурации Alembic из alembic.ini
 config = context.config
 
 # 1. Настраиваем логирование Alembic, чтобы видеть INFO-сообщения в консоли
@@ -24,13 +21,11 @@ db_url = os.getenv("DATABASE_PUBLIC_URL") or os.getenv(
     "DATABASE_URL", str(settings.DATABASE_URL)
 )
 
-# Если используется asyncpg, меняем на синхронный драйвер для Alembic
 if "asyncpg" in db_url:
     db_url = db_url.replace("+asyncpg", "")
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-# Записываем итоговый URL в конфиг
 config.set_main_option("sqlalchemy.url", db_url)
 
 
@@ -63,7 +58,6 @@ def run_migrations_online() -> None:
             context.run_migrations()
 
 
-# Определяем режим и запускаем процесс
 if context.is_offline_mode():
     run_migrations_offline()
 else:

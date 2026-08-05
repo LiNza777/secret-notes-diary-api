@@ -107,7 +107,7 @@ async def refresh_tokens(request: Request, response: Response):
             detail="Токен отозван или срок его действия истек",
         )
 
-    # Ротация токенов
+    """Ротация токенов"""
     new_access_token = create_access_token(data={"sub": username})
     new_refresh_token = create_refresh_token(data={"sub": username})
 
@@ -115,7 +115,7 @@ async def refresh_tokens(request: Request, response: Response):
         user_id=username, refresh_token=new_refresh_token, expire_seconds=604800
     )
 
-    # Обновление куки
+    """Обновление куки"""
     response.set_cookie(
         key="access_token",
         value=f"Bearer {new_access_token}",
@@ -144,7 +144,7 @@ async def logout(request: Request, response: Response):
             if username:
                 await redis_client.revoke_refresh_token(user_id=username)
         except HTTPException:
-            pass  # Если токен и так просрочен, то просто чистим куки
+            pass
 
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
