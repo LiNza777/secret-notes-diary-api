@@ -12,6 +12,13 @@ from limiter import limiter
 from routers_auth import auth_router
 from routers_notes import notes_router
 
+app = FastAPI(
+    title="Secret Notes API",
+    description="API для безопасного дневника с JWT-авторизацией",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -39,12 +46,6 @@ async def lifespan(app: FastAPI):
 
 
 
-app = FastAPI(
-    title="Secret Notes API",
-    description="API для безопасного дневника с JWT-авторизацией",
-    version="1.0.0",
-    lifespan=lifespan,
-)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
