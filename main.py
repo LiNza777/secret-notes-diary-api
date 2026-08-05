@@ -1,14 +1,28 @@
 from contextlib import asynccontextmanager
+import traceback
+from fastapi import FastAPI, Request
 from alembic.config import Config
 from alembic import command
 from fastapi import FastAPI
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
 
 from limiter import limiter
 from routers_auth import auth_router
 from routers_notes import notes_router
 
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error_type": type(exc).__name__,
+            "error_message": str(exc),
+            "traceback": traceback.format_exc().splitlines(),
+        },
+    )
 
 def run_migrations():
     """Запуск миграций Alembic перед стартом сервера."""
