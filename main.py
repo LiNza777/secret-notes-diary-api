@@ -1,36 +1,19 @@
-from contextlib import asynccontextmanager
 import traceback
-from fastapi import FastAPI, Request
+from contextlib import asynccontextmanager
+
 from alembic.config import Config
-from alembic import command
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from fastapi.responses import JSONResponse
 
+from alembic import command
 from limiter import limiter
 from routers_auth import auth_router
 from routers_notes import notes_router
 
-app = FastAPI(
-    title="Secret Notes API",
-    description="API для безопасного дневника с JWT-авторизацией",
-    version="1.0.0",
-    lifespan=lifespan,
-)
 
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error_type": type(exc).__name__,
-            "error_message": str(exc),
-            "traceback": traceback.format_exc().splitlines(),
-        },
-    )
-
+# 1. Вспомогательные функции и lifespan объявляем ДО создания app
 def run_migrations():
     """Запуск миграций Alembic перед стартом сервера."""
     alembic_cfg = Config("alembic.ini")
@@ -45,10 +28,30 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# 2. Инициализируем приложение
+app = FastAPI(
+    title="Secret Notes API",
+    description="API для безопасного дневника с JWT-авторизацией",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
-
+# 3. Настройка middleware, обработчиков ошибок и роутеров
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error_type": type(exc).__name__,
+            "error_message": str(exc),
+            "traceback": traceback.format_exc().splitlines(),
+        },
+    )
+
 
 app.include_router(auth_router)
 app.include_router(notes_router)

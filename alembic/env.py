@@ -17,7 +17,11 @@ if config.config_file_name:
 target_metadata = Base.metadata
 
 # 3. В первую очередь берем ВНУТРЕННИЙ DATABASE_URL
-db_url = os.getenv("DATABASE_URL") or os.getenv("DATABASE_PUBLIC_URL") or str(settings.DATABASE_URL)
+db_url = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("DATABASE_PUBLIC_URL")
+    or str(settings.DATABASE_URL)
+)
 
 # 4. Приводим к синхронному виду для Alembic
 if "+asyncpg" in db_url:
