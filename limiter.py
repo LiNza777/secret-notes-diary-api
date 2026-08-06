@@ -1,6 +1,8 @@
 import os
+
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+
 from config import settings
 
 # 1. Проверяем наличие готовой REDIS_URL в settings или os.environ (как дает Railway)
