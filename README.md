@@ -5,7 +5,7 @@ REST API для хранения личных заметок с JWT-аутент
 Поддерживаются регистрация, авторизация, CRUD-операции над заметками, миграции базы данных и контейнеризация через Docker.
 
 ## Ссылки
-*  **Live Demo (Swagger UI):** [Перейти к документации](https://secret-notes-diary-api-production.up.railway.app/docs)
+*  **Live Demo (Swagger UI):** [Перейти к документации](https://handsome-perfection-production-bcec.up.railway.app/docs)
 
 ## Возможности и Безопасность
 

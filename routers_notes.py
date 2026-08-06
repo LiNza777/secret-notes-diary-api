@@ -49,7 +49,6 @@ async def update_note(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ищем заметку и сразу проверяем права доступа"""
     db_note = await services.get_note_by_id(db, note_id, owner_id=current_user.id)
     if not db_note:
         raise HTTPException(
