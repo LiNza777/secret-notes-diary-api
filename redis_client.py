@@ -1,10 +1,19 @@
+import os
 import redis.asyncio as redis
 
 from config import settings
 
-redis_client = redis.Redis(
-    host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, decode_responses=True
-)
+# 1. Проверяем наличие готовой строки подключения REDIS_URL (из settings или env)
+redis_url = getattr(settings, "REDIS_URL", None) or os.getenv("REDIS_URL")
+
+# 2. Если REDIS_URL не передана, собираем URI вручную (с учетом пароля)
+if not redis_url:
+    password = getattr(settings, "REDIS_PASSWORD", None) or os.getenv("REDIS_PASSWORD")
+    auth = f":{password}@" if password else ""
+    redis_url = f"redis://{auth}{settings.REDIS_HOST}:{settings.REDIS_PORT}"
+
+# 3. Инициализируем асинхронный клиент через from_url
+redis_client = redis.from_url(redis_url, decode_responses=True)
 
 
 async def save_refresh_token(
