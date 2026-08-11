@@ -5,10 +5,9 @@ from slowapi.util import get_remote_address
 
 from config import settings
 
-# 1. Проверяем наличие готовой REDIS_URL в settings или os.environ (как дает Railway)
 storage_uri = getattr(settings, "REDIS_URL", None) or os.getenv("REDIS_URL")
 
-# 2. Если REDIS_URL нет, собираем URI вручную (с учетом пароля, если он есть)
+# Если REDIS_URL нет, собираем URI вручную (с учетом пароля, если он есть)
 if not storage_uri:
     password = getattr(settings, "REDIS_PASSWORD", None) or os.getenv("REDIS_PASSWORD")
     if password:

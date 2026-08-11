@@ -13,7 +13,6 @@ from routers_auth import auth_router
 from routers_notes import notes_router
 
 
-# 1. Вспомогательные функции и lifespan объявляем ДО создания app
 def run_migrations():
     """Запуск миграций Alembic перед стартом сервера."""
     alembic_cfg = Config("alembic.ini")
@@ -28,7 +27,6 @@ async def lifespan(app: FastAPI):
     yield
 
 
-# 2. Инициализируем приложение
 app = FastAPI(
     title="Secret Notes API",
     description="API для безопасного дневника с JWT-авторизацией",
@@ -36,7 +34,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# 3. Настройка middleware, обработчиков ошибок и роутеров
+# Настройка middleware, обработчиков ошибок и роутеров
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 

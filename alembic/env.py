@@ -9,27 +9,27 @@ from models import Base
 
 config = context.config
 
-# 1. Настраиваем логирование Alembic
+# Настраиваем логирование Alembic
 if config.config_file_name:
     fileConfig(config.config_file_name)
 
-# 2. Передаем метаданные моделей
+# Передаем метаданные моделей
 target_metadata = Base.metadata
 
-# 3. В первую очередь берем ВНУТРЕННИЙ DATABASE_URL
+# В первую очередь берем ВНУТРЕННИЙ DATABASE_URL
 db_url = (
     os.getenv("DATABASE_URL")
     or os.getenv("DATABASE_PUBLIC_URL")
     or str(settings.DATABASE_URL)
 )
 
-# 4. Приводим к синхронному виду для Alembic
+# Приводим к синхронному виду для Alembic
 if "+asyncpg" in db_url:
     db_url = db_url.replace("+asyncpg", "")
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-# 5. Экранируем '%' и передаем в конфигурацию
+# Экранируем '%' и передаем в конфигурацию
 config.set_main_option("sqlalchemy.url", db_url.replace("%", "%%"))
 
 
