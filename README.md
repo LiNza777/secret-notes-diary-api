@@ -92,8 +92,8 @@ API для хранения личных заметок с JWT-аутентиф�
 ### Auth
 - `POST /auth/register` — регистрация
 - `POST /auth/login` — вход, возвращает JWT в куки
-- `POST /auth/refresh — обновить refresh токены
-- `POST /auth/logout — выход из учетной записи
+- `POST /auth/refresh` — обновить refresh токены
+- `POST /auth/logout` — выход из учетной записи
 - `GET /auth/me`— получение профиля текущего пользователя
 - `POST /auth/logout/all` — полный выход с удалением refresh-token
 
