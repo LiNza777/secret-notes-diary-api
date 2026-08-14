@@ -5,8 +5,6 @@ API для хранения личных заметок с JWT-аутентиф�
 ## Ссылки
 *  **Live Demo (Swagger UI):** [Перейти к документации](https://handsome-perfection-production-bcec.up.railway.app/docs)
   
-<img width="1521" height="865" alt="swagger" src="https://github.com/user-attachments/assets/eeb1e633-4060-48a5-9b1e-61f5a5b04e3f" />
-
 ## Возможности и Безопасность
 
 - Полностью асинхронный стек: Высокая производительность благодаря FastAPI, `AsyncSession` в SQLAlchemy и асинхронным драйверам БД.
@@ -88,6 +86,8 @@ API для хранения личных заметок с JWT-аутентиф�
 
 
 ## Эндпоинты
+
+<img width="1521" height="865" alt="swagger" src="https://github.com/user-attachments/assets/eeb1e633-4060-48a5-9b1e-61f5a5b04e3f" />
 
 ### Auth
 - `POST /auth/register` — регистрация
