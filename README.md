@@ -93,7 +93,7 @@ API для хранения личных заметок с JWT-аутентиф�
 - `POST /auth/register` — регистрация
 - `POST /auth/login` — вход, возвращает JWT в куки
 - `GET /auth/me`— получение профиля текущего пользователя
-- `POST /auth/logout` — выход
+- `POST /auth/logout/all` — выход
 
 ### Notes
 - `GET /notes/` — все заметки текущего пользователя
