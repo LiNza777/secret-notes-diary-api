@@ -1,4 +1,4 @@
-# Secret Notes API
+<img width="1521" height="865" alt="swagger" src="https://github.com/user-attachments/assets/8363630b-98c4-4926-bfde-e675cef37e6b" /># Secret Notes API
 
 REST API для хранения личных заметок с JWT-аутентификацией.
 Каждый пользователь имеет собственное пространство заметок.
@@ -6,6 +6,8 @@ REST API для хранения личных заметок с JWT-аутент
 
 ## Ссылки
 *  **Live Demo (Swagger UI):** [Перейти к документации](https://handsome-perfection-production-bcec.up.railway.app/docs)
+  
+<img width="1521" height="865" alt="swagger" src="https://github.com/user-attachments/assets/eeb1e633-4060-48a5-9b1e-61f5a5b04e3f" />
 
 ## Возможности и Безопасность
 
@@ -18,7 +20,6 @@ REST API для хранения личных заметок с JWT-аутент
 - ORM и Миграции: SQLAlchemy 2.0 (Async) + автоматическое управление схемой через Alembic.
 - CI/CD и Тестирование: Автоматический прогон асинхронных тестов (`pytest`) и линтеров при каждом Push/PR в GitHub Actions.
 - Контейнеризация: Готовая конфигурация Docker + Docker Compose для разворачивания всей инфраструктуры одной командой.
-
 
 ## Технологии
 * Фреймворк:FastAPI (Python 3.10+)
