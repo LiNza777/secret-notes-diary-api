@@ -1,19 +1,27 @@
 import os
-
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from config import settings
 
+# 1. Достаем REDIS_URL из Pydantic settings или переменных окружения
 storage_uri = getattr(settings, "REDIS_URL", None) or os.getenv("REDIS_URL")
 
-# Если REDIS_URL нет, собираем URI вручную (с учетом пароля, если он есть)
+# 2. Если REDIS_URL нет, пытаемся собрать из HOST и PORT
 if not storage_uri:
+    host = getattr(settings, "REDIS_HOST", None) or os.getenv("REDIS_HOST")
+    port = getattr(settings, "REDIS_PORT", None) or os.getenv("REDIS_PORT", 6379)
     password = getattr(settings, "REDIS_PASSWORD", None) or os.getenv("REDIS_PASSWORD")
-    if password:
-        storage_uri = f"redis://:{password}@{settings.REDIS_HOST}:{settings.REDIS_PORT}"
-    else:
-        storage_uri = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
+
+    if host:
+        if password:
+            storage_uri = f"redis://:{password}@{host}:{port}"
+        else:
+            storage_uri = f"redis://{host}:{port}"
+
+# 3. 🔥 ФОЛЛБЕК: Если URL не задан ИЛИ он указывает на localhost (когда Redis не запущен локально)
+if not storage_uri or "localhost" in storage_uri:
+    storage_uri = "memory://"
 
 limiter = Limiter(
     key_func=get_remote_address,
