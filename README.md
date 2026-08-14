@@ -131,7 +131,7 @@ REST API для хранения личных заметок с JWT-аутент
 3. Откройте веб-интерфейс по адресу http://localhost:8080
 4. Укажите параметры нагрузки и локальный URL API http://localhost:8000 или [ссылку на Railway](https://handsome-perfection-production-bcec.up.railway.app), чтобы запустить тест.
 
-![Результаты Locust](assets/locust-report.png)
+<img width="1488" height="900" alt="locus-report" src="https://github.com/user-attachments/assets/9b691fb0-16d8-4e8b-8e49-5a017ad42c3c" />
 
 ## Линтинг и форматирование (Ruff)
 Для проверки и форматирования кода используется Ruff:![Результаты Locust](assets/locust-report.png)
