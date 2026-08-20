@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import Text,ForeignKey
+from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from base import Base
+
 
 class User(Base):
     __tablename__ = "users"
