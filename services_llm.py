@@ -22,7 +22,7 @@ async def generate_note_summary(text: str) -> str:
     }
 
     payload = {
-        "model": "google/google/gemma-4-26b-a4b-it:free",
+        "model": "google/gemma-4-26b-a4b-it:free",
         "messages": [
             {
                 "role": "system",
@@ -37,23 +37,43 @@ async def generate_note_summary(text: str) -> str:
         "temperature": 0.3,
     }
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        try:
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
             response.raise_for_status()
             data = response.json()
-            return data["choices"][0]["message"]["content"].strip()
+    except httpx.HTTPStatusError as e:
+        print(
+            f"--- OPENROUTER ERROR STATUS: {e.response.status_code} ---",
+            flush=True,
+        )
+        print(f"--- OPENROUTER ERROR BODY: {e.response.text} ---", flush=True)
 
-        except httpx.HTTPStatusError as e:
-            logger.error(f"LLM API Error: {e.response.text}")
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Ошибка внешнего AI-сервиса",
-            ) from e
+        logger.error(f"LLM API Error: {e.response.text}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Ошибка внешнего AI-сервиса",
+        ) from e
+    except httpx.RequestError as e:
+        print(f"--- OPENROUTER NETWORK ERROR: {e} ---", flush=True)
 
-        except httpx.RequestError as e:
-            logger.error(f"LLM Network Error: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail="AI-сервис недоступен",
-            ) from e
+        logger.error(f"LLM Network Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="AI-сервис недоступен",
+        ) from e
+
+    choices = data.get("choices", [])
+    if (
+        not choices
+        or "message" not in choices[0]
+        or "content" not in choices[0]["message"]
+    ):
+        logger.error("LLM API returned no summary content")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Ошибка внешнего AI-сервиса",
+        )
+
+    summary = choices[0]["message"]["content"].strip()
+    return summary or text
