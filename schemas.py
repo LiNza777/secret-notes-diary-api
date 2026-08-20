@@ -34,4 +34,5 @@ class NoteResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     owner_id: int
+    ai_summary: str | None = None
     model_config = {"from_attributes": True}

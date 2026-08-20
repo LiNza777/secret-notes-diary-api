@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import Text,ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from base import Base
-
 
 class User(Base):
     __tablename__ = "users"
@@ -27,3 +26,4 @@ class Note(Base):
     )
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     owner: Mapped["User"] = relationship(back_populates="notes")
+    ai_summary: Mapped[str | None] = mapped_column(Text, nullable=True)

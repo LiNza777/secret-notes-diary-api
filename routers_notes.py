@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from services_llm import generate_note_summary 
 import services
 from auth import get_current_user
 from data_base import get_db
@@ -73,3 +73,28 @@ async def delete_note(
 
     await services.delete_note(db, db_note)
     return None
+
+@notes_router.post("/{note_id}/summary", response_model=NoteResponse)
+async def summarize_note(
+    note_id: int,
+    force_refresh: bool = False,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+  db_note = await services.get_note_by_id(
+      db, note_id, owner_id=current_user.id
+  )
+  if not db_note:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="Заметка не найдена"
+    )
+  if db_note.ai_summary and not force_refresh:
+    return db_note
+
+  summary = await generate_note_summary(db_note.content)
+
+  db_note.ai_summary = summary
+  await db.commit()
+  await db.refresh(db_note)
+
+  return db_note
