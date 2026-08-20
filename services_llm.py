@@ -46,10 +46,10 @@ async def generate_note_summary(text: str) -> str:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail="Ошибка внешнего AI-сервиса",
-            )
+            ) from e
         except httpx.RequestError as e:
             logger.error(f"LLM Network Error: {e}")
             raise HTTPException(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                 detail="AI-сервис недоступен",
-            )
+            ) from e
