@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str | None = None
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str | None = None
-
+    OPENROUTER_API_KEY: str
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
