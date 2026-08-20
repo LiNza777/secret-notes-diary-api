@@ -25,17 +25,16 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      
       - name: Проверка линтером Ruff
         run: ruff check .
 
       - name: Проверка форматирования Ruff
         run: ruff format --check .
-      
 
       - name: Запуск тестов через Pytest
         env:
           SECRET_KEY: "test_secret_key_for_ci_environment"
           DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          OPENROUTER_API_KEY: "dummy_key_for_ci_environment"
         run: |
           pytest -v
