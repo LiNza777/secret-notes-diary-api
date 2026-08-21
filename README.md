@@ -89,8 +89,7 @@ API для хранения личных заметок с JWT-аутентиф�
 
 
 ## Эндпоинты
-
-<img width="1521" height="865" alt="swagger" src="https://github.com/user-attachments/assets/eeb1e633-4060-48a5-9b1e-61f5a5b04e3f" />
+<img width="1572" height="850" alt="image" src="https://github.com/user-attachments/assets/6fc26efb-a812-4516-bb27-222af1b9842f" />
 
 ### Auth
 - `POST /auth/register` — регистрация
