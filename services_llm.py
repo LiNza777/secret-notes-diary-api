@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 import httpx
@@ -9,6 +8,12 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+FALLBACK_MODELS = [
+    "google/gemma-4-26b-a4b-it:free",
+    "cohere/north-mini-code:free",
+    "liquid/lfm-2.5-2.6b:free",
+]
 
 
 async def generate_note_summary(text: str) -> str:
@@ -22,77 +27,53 @@ async def generate_note_summary(text: str) -> str:
         "X-Title": "Secret Notes App",
     }
 
-    payload = {
-        "model": "google/gemma-4-26b-a4b-it:free",
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "Сделай краткое саммари текста на языке оригинала. Максимум"
-                    " 2-3 предложения. Возвращай ТОЛЬКО текст саммари."
-                ),
-            },
-            {"role": "user", "content": text},
-        ],
-        "max_tokens": 200,
-        "temperature": 0.3,
-    }
-
-    max_retries = 2
-    data = None
-
     async with httpx.AsyncClient(timeout=10.0) as client:
-        for attempt in range(1, max_retries + 1):
+        for model_name in FALLBACK_MODELS:
+            payload = {
+                "model": model_name,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "Сделай краткое саммари текста на языке оригинала. Максимум"
+                            " 2-3 предложения. Возвращай ТОЛЬКО текст саммари."
+                        ),
+                    },
+                    {"role": "user", "content": text},
+                ],
+                "max_tokens": 200,
+                "temperature": 0.3,
+            }
+
             try:
                 response = await client.post(
                     OPENROUTER_URL, headers=headers, json=payload
                 )
                 response.raise_for_status()
                 data = response.json()
-                break
-            except httpx.HTTPStatusError as e:
-                if attempt == max_retries:
-                    print(
-                        f"--- OPENROUTER ERROR STATUS: {e.response.status_code} ---",
-                        flush=True,
-                    )
-                    print(
-                        f"--- OPENROUTER ERROR BODY: {e.response.text} ---", flush=True
-                    )
 
-                    logger.error(f"LLM API Error: {e.response.text}")
-                    raise HTTPException(
-                        status_code=status.HTTP_502_BAD_GATEWAY,
-                        detail="Ошибка внешнего AI-сервиса",
-                    ) from e
+                choices = data.get("choices", [])
+                if (
+                    choices
+                    and "message" in choices[0]
+                    and "content" in choices[0]["message"]
+                ):
+                    summary = choices[0]["message"]["content"].strip()
+                    if summary:
+                        return summary
 
-                logger.warning(f"LLM API attempt {attempt} failed, retrying...")
-                await asyncio.sleep(1.0)
+            except (httpx.HTTPStatusError, httpx.RequestError) as e:
+                print(
+                    f"--- MODEL {model_name} FAILED, TRYING NEXT ---",
+                    flush=True,
+                )
+                logger.warning(
+                    f"Model {model_name} failed with error: {e}. Trying fallback..."
+                )
+                continue
 
-            except httpx.RequestError as e:
-                if attempt == max_retries:
-                    print(f"--- OPENROUTER NETWORK ERROR: {e} ---", flush=True)
-
-                    logger.error(f"LLM Network Error: {e}")
-                    raise HTTPException(
-                        status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                        detail="AI-сервис недоступен",
-                    ) from e
-
-                logger.warning(f"LLM Network attempt {attempt} failed, retrying...")
-                await asyncio.sleep(1.0)
-
-    choices = data.get("choices", []) if data else []
-    if (
-        not choices
-        or "message" not in choices[0]
-        or "content" not in choices[0]["message"]
-    ):
-        logger.error("LLM API returned no summary content")
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Ошибка внешнего AI-сервиса",
-        )
-
-    summary = choices[0]["message"]["content"].strip()
-    return summary or text
+    logger.error("All LLM fallback models failed")
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail="Ошибка внешнего AI-сервиса",
+    )
