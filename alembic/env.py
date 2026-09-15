@@ -11,7 +11,7 @@ config = context.config
 
 # Настраиваем логирование Alembic
 if config.config_file_name:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # Передаем метаданные моделей
 target_metadata = Base.metadata
