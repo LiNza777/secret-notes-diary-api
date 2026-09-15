@@ -63,7 +63,7 @@ async def generate_note_summary(text: str) -> str:
                         return summary
 
             except (httpx.HTTPStatusError, httpx.RequestError) as e:
-                print(
+                logger.warning(
                     f"--- MODEL {model_name} FAILED, TRYING NEXT ---",
                     flush=True,
                 )

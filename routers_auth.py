@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -22,11 +24,13 @@ from limiter import limiter
 from models import User
 from schemas import UserLoginSchema, UserRegisterSchema
 
+logger = logging.getLogger(__name__)
+
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def send_welcome_email(username: str):
-    print(f"[Background] Письмо отправлено пользователю: {username}")
+    logger.info(f"[Background] Письмо отправлено пользователю: {username}")
 
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
