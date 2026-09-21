@@ -3,7 +3,7 @@ API для хранения личных заметок с JWT-аутентиф�
 Поддерживаются регистрация, авторизация, CRUD-операции над заметками, миграции базы данных и контейнеризация через Docker.
 
 ## Ссылки
-*  **Live Demo (Swagger UI):** [Перейти к документации](https://handsome-perfection-production-bcec.up.railway.app/docs)
+*  **Live Demo (Swagger UI):** [Перейти к документации][((https://secret-notes-diary-api.onrender.com/docs))]
   
 ## Возможности и Безопасность
 
@@ -135,7 +135,7 @@ API для хранения личных заметок с JWT-аутентиф�
    ```bash
    locust -f locustfile.py
 3. Откройте веб-интерфейс по адресу http://localhost:8080
-4. Укажите параметры нагрузки и локальный URL API http://localhost:8000 или [ссылку на Railway](https://handsome-perfection-production-bcec.up.railway.app), чтобы запустить тест.
+4. Укажите параметры нагрузки и локальный URL API http://localhost:8000 или([(https://secret-notes-diary-api.onrender.com/docs)], чтобы запустить тест.
 
 <img width="1488" height="900" alt="locus-report" src="https://github.com/user-attachments/assets/9b691fb0-16d8-4e8b-8e49-5a017ad42c3c" />
 
