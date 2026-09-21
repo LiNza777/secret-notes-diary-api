@@ -64,10 +64,6 @@ async def generate_note_summary(text: str) -> str:
 
             except (httpx.HTTPStatusError, httpx.RequestError) as e:
                 logger.warning(
-                    f"--- MODEL {model_name} FAILED, TRYING NEXT ---",
-                    flush=True,
-                )
-                logger.warning(
                     f"Model {model_name} failed with error: {e}. Trying fallback..."
                 )
                 continue
